@@ -2,8 +2,9 @@
    <soapenv:Header/>
    <soapenv:Body>
       <exam:orderRequestType>
+      	 <id>5</id>
          <name>Ivo</name>
-         <from>Praha</from>
+         <from>Prague</from>
          <to>Brno</to>
          <persons>1</persons>
          <arrival>2012-03-18</arrival>

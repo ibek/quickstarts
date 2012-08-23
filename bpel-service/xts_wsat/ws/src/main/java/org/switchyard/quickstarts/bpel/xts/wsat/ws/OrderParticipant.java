@@ -10,59 +10,87 @@ import com.arjuna.wst.SystemException;
 import com.arjuna.wst.Vote;
 import com.arjuna.wst.WrongStateException;
 
+/**
+ * 
+ * Order participant to prepare and order fly tickets.
+ * 
+ */
 public class OrderParticipant implements Durable2PCParticipant, Serializable {
 
-  /**
-   * 
-   */
-  private static final long serialVersionUID = -6459800278322126331L;
-  
-  private static Logger log = Logger.getLogger(OrderParticipant.class.getName());
+    private static final long serialVersionUID = -6459800278322126331L;
 
-  protected String txID;
-  protected String name;
-  protected String fltid;
-  
-  public OrderParticipant(String txID, String name, String fltid){
-    this.txID = txID;
-    this.name = name;
-    this.fltid = fltid;
-  }
-  
-  public String getTxID(){
-    return txID;
-  }
+    private static Logger log = Logger.getLogger(OrderParticipant.class
+            .getName());
 
-  @Override
-  public Vote prepare() throws WrongStateException, SystemException {
-    boolean state = AirportManager.checkFLTID(fltid);
-    if (state) {
-      log.info("AirportOrderParticipant "+fltid+" prepare: prepared");
-      return new Prepared();
-    } else {
-      log.info("AirportOrderParticipant "+fltid+" prepare: aborted");
-      return new Aborted();
+    private String _txID;
+    private String _name;
+    private String _fltid;
+
+    /**
+     * @param txID transaction identifier
+     * @param name username
+     * @param fltid flight identifier
+     */
+    public OrderParticipant(String txID, String name, String fltid) {
+        _txID = txID;
+        _name = name;
+        _fltid = fltid;
     }
-  }
 
-  @Override
-  public void commit() throws WrongStateException, SystemException {
-    log.info("AirportOrderParticipant "+fltid+" commit");
-  }
+    /**
+     * Get transaction identifier.
+     * @return transaction identifier
+     */
+    public String getTxID() {
+        return _txID;
+    }
 
-  @Override
-  public void rollback() throws WrongStateException, SystemException {
-    log.info("AirportOrderParticipant "+fltid+" rollback");
-  }
+    @Override
+    public Vote prepare() throws WrongStateException, SystemException {
+        boolean state = AirportManager.checkFLTID(_fltid);
+        if (state) {
+            log.info("\n================================================================================\n"
+                    + "AirportOrderParticipant "
+                    + _fltid
+                    + " prepare: prepared"
+                    + "\n================================================================================");
+            return new Prepared();
+        } else { // there is no flight right now
+            log.info("\n================================================================================\n"
+                    + "AirportOrderParticipant "
+                    + _fltid
+                    + " prepare: aborted"
+                    + "\n================================================================================");
+            return new Aborted();
+        }
+    }
 
-  @Override
-  public void unknown() throws SystemException {
-    
-  }
+    @Override
+    public void commit() throws WrongStateException, SystemException {
+        log.info("\n================================================================================\n"
+                + "AirportOrderParticipant "
+                + _fltid
+                + " commit"
+                + "\n================================================================================");
+    }
 
-  @Override
-  public void error() throws SystemException {
-    
-  }
+    @Override
+    public void rollback() throws WrongStateException, SystemException {
+        log.info("\n================================================================================\n"
+                + "AirportOrderParticipant "
+                + _fltid
+                + " rollback"
+                + "\n================================================================================");
+    }
+
+    @Override
+    public void unknown() throws SystemException {
+
+    }
+
+    @Override
+    public void error() throws SystemException {
+
+    }
 
 }

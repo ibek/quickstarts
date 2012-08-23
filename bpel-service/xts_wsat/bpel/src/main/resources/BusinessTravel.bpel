@@ -22,6 +22,7 @@
 		<bpel:variable name="orderReq" messageType="tns:orderRequest" />
 		<bpel:variable name="orderResp" messageType="tns:orderResponse" />
 		<bpel:variable name="completeReq" messageType="tns:completeRequest" />
+		<bpel:variable name="completeResp" messageType="tns:completeResponse" />
 		<bpel:variable name="airportGetFLTIDReq" messageType="airport:getFLTID" />
 		<bpel:variable name="airportFLTIDResp" messageType="airport:getFLTIDResponse" />
 		<bpel:variable name="airportOrderReq" messageType="airport:order" />
@@ -43,13 +44,21 @@
 							<bpel:from>
 								<bpel:literal>
 									<tns:orderResponseType>
+										<id>respid</id>
 										<fltid>fltid</fltid>
 										<return_fltid>return_fltid</return_fltid>
-										<hotelid>hotelid</hotelid>
 									</tns:orderResponseType>
 								</bpel:literal>
 							</bpel:from>
 							<bpel:to variable="orderResp" part="parameters" />
+						</bpel:copy>
+						<bpel:copy>
+							<bpel:from part="parameters" variable="orderReq">
+								<bpel:query>id</bpel:query>
+							</bpel:from>
+							<bpel:to part="parameters" variable="orderResp">
+								<bpel:query>respid</bpel:query>
+							</bpel:to>
 						</bpel:copy>
 					</bpel:assign>
 
@@ -259,7 +268,7 @@
 			</bpel:onMessage>
 		</bpel:pick>
 
-		<bpel:receive name="CompleteOrderRequest" partnerLink="client"
+		<bpel:receive name="Complete order request" partnerLink="client"
 			operation="complete" portType="tns:BusinessTravelService" variable="completeReq">
 			<bpel:correlations>
 				<bpel:correlation set="Session" initiate="no" />
@@ -270,5 +279,34 @@
 			<bpel:condition><![CDATA[$completeReq.parameters/simulateException = 'true']]></bpel:condition>
 			<bpel:throw faultName="tns:simulatedFault" name="Throw exception" />
 		</bpel:if>
+
+		<bpel:assign validate="no" name="set complete response">
+			<bpel:copy>
+				<bpel:from>
+					<bpel:literal>
+						<tns:completeResponseType>
+							<id>respid</id>
+						</tns:completeResponseType>
+					</bpel:literal>
+				</bpel:from>
+				<bpel:to variable="completeResp" part="parameters" />
+			</bpel:copy>
+			<bpel:copy>
+				<bpel:from part="parameters" variable="completeReq">
+					<bpel:query>id</bpel:query>
+				</bpel:from>
+				<bpel:to part="parameters" variable="completeResp">
+					<bpel:query>respid</bpel:query>
+				</bpel:to>
+			</bpel:copy>
+		</bpel:assign>
+
+		<bpel:reply name="Reply about completion" partnerLink="client"
+			operation="complete" variable="completeResp">
+			<bpel:correlations>
+				<bpel:correlation set="Session" initiate="no" />
+			</bpel:correlations>
+		</bpel:reply>
+
 	</bpel:sequence>
 </bpel:process>

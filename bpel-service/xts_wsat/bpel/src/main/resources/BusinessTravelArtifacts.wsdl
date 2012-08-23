@@ -57,6 +57,14 @@
 				</xsd:complexType>
 			</xsd:element>
 
+			<xsd:element name="completeResponseType">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="id" type="xsd:int" />
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+
 			<xsd:complexType name="scopeFault">
 				<xsd:sequence>
 					<xsd:element name="faultMessage" type="xsd:string" />
@@ -75,6 +83,9 @@
 	<message name="completeRequest">
 		<part name="parameters" element="tns:completeRequestType" />
 	</message>
+	<message name="completeResponse">
+		<part name="parameters" element="tns:completeResponseType" />
+	</message>
 	<message name="exceptionResponse">
 		<part name="parameters" type="tns:scopeFault" />
 	</message>
@@ -86,21 +97,15 @@
 		</operation>
 		<operation name="complete">
 			<input message="tns:completeRequest" />
+			<output message="tns:completeResponse" />
 			<fault message="tns:exceptionResponse" name="exception" />
 		</operation>
 	</portType>
 
-	<wsp:Policy wsu:Id="TransactedPolicy">
-		<wsat:ATAssertion wsp:optional="true" />
-	</wsp:Policy>
-
 	<binding name="BusinessTravelServiceBinding" type="tns:BusinessTravelService">
-		<soap:binding transport="http://schemas.xmlsoap.org/soap/http"
-			style="document" />
+		<soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document" />
 		<operation name="order">
 			<soap:operation soapAction="http://www.jboss.org/bpel/examples" />
-			<wsp:PolicyReference URI="#TransactedPolicy"
-				required="true" />
 			<input>
 				<soap:body use="literal" />
 			</input>
@@ -113,6 +118,9 @@
 			<input>
 				<soap:body use="literal" />
 			</input>
+			<output>
+				<soap:body use="literal" />
+			</output>
 			<fault name="exception">
 				<soap:fault use="literal" name="exception"
 					namespace="http://www.jboss.org/bpel/examples" />
@@ -143,6 +151,11 @@
 
 	<vprop:propertyAlias propertyName="tns:SessionID"
 		messageType="tns:completeRequest" part="parameters">
+		<vprop:query>id</vprop:query>
+	</vprop:propertyAlias>
+
+	<vprop:propertyAlias propertyName="tns:SessionID"
+		messageType="tns:completeResponse" part="parameters">
 		<vprop:query>id</vprop:query>
 	</vprop:propertyAlias>
 

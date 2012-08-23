@@ -19,7 +19,6 @@
 	<modules>
 		<module>bpel</module>
 		<module>ws</module>
-		<module>test</module>
 	</modules>
 
 </project>
