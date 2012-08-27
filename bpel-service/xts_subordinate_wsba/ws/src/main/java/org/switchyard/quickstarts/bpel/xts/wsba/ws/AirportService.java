@@ -1,4 +1,4 @@
-package org.switchyard.quickstarts.bpel.xts.wsat.ws;
+package org.switchyard.quickstarts.bpel.xts.wsba.ws;
 
 import static javax.jws.soap.SOAPBinding.Style.DOCUMENT;
 import static javax.jws.soap.SOAPBinding.Use.LITERAL;
@@ -16,7 +16,9 @@ import javax.jws.WebResult;
 import javax.jws.WebService;
 import javax.jws.soap.SOAPBinding;
 
+import com.arjuna.mw.wst11.BusinessActivityManager;
 import com.arjuna.mw.wst11.TransactionManagerFactory;
+import com.arjuna.mw.wst11.UserBusinessActivity;
 import com.arjuna.mw.wst11.UserTransaction;
 import com.arjuna.mw.wst11.UserTransactionFactory;
 
@@ -59,32 +61,29 @@ public class AirportService {
             @WebParam(name = "fltid") String fltid) {
         log.info("AirportService:order");
 
-        UserTransaction transactionId = UserTransactionFactory
-                .userTransaction();
+        UserBusinessActivity uba = UserBusinessActivity.getUserBusinessActivity();
 
-        if (transactionId != null) {
-            log.info("Transaction ID = " + transactionId.toString());
-            if (transactionId.toString().compareTo("Unknown") == 0) {
+        if (uba != null) {
+            log.info("Transaction ID = " + uba.toString());
+            if (uba.toString().compareTo("Unknown") == 0) {
                 log.info("JBoss AS is badly configured. (Enable XTS)");
                 return;
             }
 
             // Create order participant (fly ticket)
             OrderParticipant op = new OrderParticipant(
-                    transactionId.toString(), name, fltid);
+                    uba.toString(), name, fltid);
 
             try {
                 // Enlist order participant to the transaction
-                TransactionManagerFactory.transactionManager()
-                        .enlistForDurableTwoPhase(
-                                op,
-                                "org.switchyard.quickstarts.bpel.xts.wsat.ws:AirportService:" + name
-                                        + ":" + fltid);
+                BusinessActivityManager.getBusinessActivityManager()
+                    .enlistForBusinessAgreementWithCoordinatorCompletion(op, "org.switchyard.quickstarts.bpel.xts.wsba.ws:AirportService:" + name + ":" + fltid);
             } catch (Exception e) {
                 log.log(Level.SEVERE, e.getMessage());
                 e.printStackTrace();
             }
         }
+        
     }
 
 }
