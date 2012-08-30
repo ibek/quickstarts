@@ -9,14 +9,6 @@
         <soap:contextPath>xts_wsat</soap:contextPath>
       </soap:binding.soap>
     </sca:service>
-    <sca:reference name="AirportService" multiplicity="0..1" promote="BusinessTravelService/AirportService">
-      <sca:interface.wsdl interface="AirportService.wsdl#wsdl.porttype(AirportService)"/>
-      <soap:binding.soap>
-        <soap:contextMapper includes=".*" soapHeadersType="DOM"/>
-        <soap:wsdl>AirportService.wsdl</soap:wsdl>
-        <soap:socketAddr>:18001</soap:socketAddr>
-      </soap:binding.soap>
-    </sca:reference>
     <sca:component name="BusinessTravelService">
       <bpel:implementation.bpel process="sh:BusinessTravel"/>
       <sca:service name="BusinessTravelService">
@@ -26,5 +18,13 @@
         <sca:interface.wsdl interface="AirportService.wsdl#wsdl.porttype(AirportService)"/>
       </sca:reference>
     </sca:component>
+    <sca:reference name="AirportService" multiplicity="0..1" promote="BusinessTravelService/AirportService">
+      <sca:interface.wsdl interface="AirportService.wsdl#wsdl.porttype(AirportService)"/>
+      <soap:binding.soap>
+        <soap:contextMapper includes=".*" soapHeadersType="DOM"/>
+        <soap:wsdl>AirportService.wsdl</soap:wsdl>
+        <soap:socketAddr>:18001</soap:socketAddr>
+      </soap:binding.soap>
+    </sca:reference>
   </sca:composite>
 </switchyard>

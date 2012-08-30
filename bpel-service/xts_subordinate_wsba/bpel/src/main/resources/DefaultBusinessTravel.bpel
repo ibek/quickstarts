@@ -29,9 +29,9 @@
 		<bpel:variable name="completeRespPP" messageType="pp:completeResponse" />
 	</bpel:variables>
 
-	<bpel:sequence name="Business Travel Process">
+	<bpel:sequence name="Default Business Travel Process">
 
-		<bpel:receive name="WS-BusinessActivity order"
+		<bpel:receive name="WS-BusinessActivity default order"
 			partnerLink="client" operation="order" portType="pp:DefaultBusinessTravel"
 			variable="orderReqPP" createInstance="yes">
 			<bpel:correlations>

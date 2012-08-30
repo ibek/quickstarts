@@ -31,7 +31,7 @@
 
 	<bpel:sequence name="Business Travel Process">
 
-		<bpel:receive name="WS-AtomicTransaction order"
+		<bpel:receive name="WS-BusinessActivity order"
 			partnerLink="client" operation="order" portType="tns:BusinessTravelService"
 			variable="orderReq" createInstance="yes">
 			<bpel:correlations>
