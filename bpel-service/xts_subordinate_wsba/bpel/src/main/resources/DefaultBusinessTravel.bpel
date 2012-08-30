@@ -21,82 +21,108 @@
 	<bpel:variables>
 		<bpel:variable name="orderReq" messageType="tns:orderRequest" />
 		<bpel:variable name="orderResp" messageType="tns:orderResponse" />
-        <bpel:variable name="completeReq" messageType="tns:completeRequest" />
-        <bpel:variable name="completeResp" messageType="tns:completeResponse" />
+		<bpel:variable name="completeReq" messageType="tns:completeRequest" />
+		<bpel:variable name="completeResp" messageType="tns:completeResponse" />
 		<bpel:variable name="orderReqPP" messageType="pp:orderRequest" />
 		<bpel:variable name="orderRespPP" messageType="pp:orderResponse" />
-        <bpel:variable name="completeReqPP" messageType="pp:completeRequest" />
-        <bpel:variable name="completeRespPP" messageType="pp:completeResponse" />
+		<bpel:variable name="completeReqPP" messageType="pp:completeRequest" />
+		<bpel:variable name="completeRespPP" messageType="pp:completeResponse" />
 	</bpel:variables>
 
 	<bpel:sequence name="Business Travel Process">
 
-		<bpel:pick createInstance="yes" name="Pick">
-			<bpel:onMessage partnerLink="client" portType="pp:DefaultBusinessTravel"
-				operation="order" variable="orderReqPP">
-				<bpel:correlations>
-					<bpel:correlation set="Session" initiate="yes" />
-				</bpel:correlations>
+		<bpel:receive name="WS-BusinessActivity order"
+			partnerLink="client" operation="order" portType="pp:DefaultBusinessTravel"
+			variable="orderReqPP" createInstance="yes">
+			<bpel:correlations>
+				<bpel:correlation set="Session" initiate="yes" />
+			</bpel:correlations>
+		</bpel:receive>
 
-				<bpel:sequence name="WS-BusinessActivity order">
-					<bpel:assign validate="no">
-						<bpel:copy>
-							<bpel:from>
-								<bpel:literal>
-									<tns:order>
-										<id>8</id>
-										<name>default</name>
-										<from>Prague</from>
-										<to>Brno</to>
-										<persons>1</persons>
-										<arrival>2012-03-18</arrival>
-										<departure>2012-03-23</departure>
-									</tns:order>
-								</bpel:literal>
-							</bpel:from>
-							<bpel:to variable="orderReq" part="parameters" />
-						</bpel:copy>
-					</bpel:assign>
+		<bpel:assign validate="no">
+			<bpel:copy>
+				<bpel:from>
+					<bpel:literal>
+						<tns:order>
+							<id>id</id>
+							<name>default</name>
+							<from>Prague</from>
+							<to>Brno</to>
+							<persons>1</persons>
+							<arrival>2012-03-18</arrival>
+							<departure>2012-03-23</departure>
+						</tns:order>
+					</bpel:literal>
+				</bpel:from>
+				<bpel:to variable="orderReq" part="parameters" />
+			</bpel:copy>
+			<bpel:copy>
+				<bpel:from part="parameters" variable="orderReqPP">
+					<bpel:query>id</bpel:query>
+				</bpel:from>
+				<bpel:to part="parameters" variable="orderReq">
+					<bpel:query>id</bpel:query>
+				</bpel:to>
+			</bpel:copy>
+		</bpel:assign>
 
-					<bpel:invoke name="order flight tickets"
-						partnerLink="btravel" operation="order" inputVariable="orderReq"
-						outputVariable="orderResp" />
+		<bpel:invoke name="order flight tickets" partnerLink="btravel"
+			operation="order" inputVariable="orderReq" outputVariable="orderResp"/>
 
-					<bpel:assign validate="no">
-						<bpel:copy>
-							<bpel:from>
-								<bpel:literal>
-									<tns:complete>
-										<id>8</id>
-										<simulateException>false</simulateException>
-									</tns:complete>
-								</bpel:literal>
-							</bpel:from>
-							<bpel:to variable="completeReq" part="parameters" />
-						</bpel:copy>
-					</bpel:assign>
+		<bpel:assign validate="no">
+			<bpel:copy>
+				<bpel:from>
+					<bpel:literal>
+						<tns:complete>
+							<id>id</id>
+							<simulateException>false</simulateException>
+						</tns:complete>
+					</bpel:literal>
+				</bpel:from>
+				<bpel:to variable="completeReq" part="parameters" />
+			</bpel:copy>
+			<bpel:copy>
+				<bpel:from part="parameters" variable="orderReqPP">
+					<bpel:query>id</bpel:query>
+				</bpel:from>
+				<bpel:to part="parameters" variable="completeReq">
+					<bpel:query>id</bpel:query>
+				</bpel:to>
+			</bpel:copy>
+		</bpel:assign>
+		
+		<bpel:invoke name="complete order" partnerLink="btravel"
+			operation="complete" inputVariable="completeReq" outputVariable="completeResp" />
 
-					<bpel:invoke name="complete order" partnerLink="btravel"
-						operation="complete" inputVariable="completeReq" outputVariable="completeResp"/>
-
-					<bpel:assign validate="no">
-						<bpel:copy>
-							<bpel:from variable="orderResp" part="parameters" />
-							<bpel:to variable="orderRespPP" part="parameters" />
-						</bpel:copy>
-					</bpel:assign>
-
-					<bpel:reply name="Reply order details" partnerLink="client"
-						operation="order" variable="orderRespPP">
-						<bpel:correlations>
-							<bpel:correlation set="Session" initiate="no" />
-						</bpel:correlations>
-					</bpel:reply>
-
-				</bpel:sequence>
-
-			</bpel:onMessage>
-		</bpel:pick>
+		<bpel:assign validate="no">
+			<bpel:copy>
+				<bpel:from>
+					<bpel:literal>
+						<pp:orderResponseType>
+							<id>id</id>
+							<fltid>fltid</fltid>
+							<return_fltid>return_fltid</return_fltid>
+						</pp:orderResponseType>
+					</bpel:literal>
+				</bpel:from>
+				<bpel:to variable="orderRespPP" part="parameters" />
+			</bpel:copy>
+            <bpel:copy>
+                <bpel:from part="parameters" variable="orderReqPP">
+                    <bpel:query>id</bpel:query>
+                </bpel:from>
+                <bpel:to part="parameters" variable="orderRespPP">
+                    <bpel:query>id</bpel:query>
+                </bpel:to>
+            </bpel:copy>
+		</bpel:assign>
+		
+		<bpel:reply name="Reply order details" partnerLink="client"
+			operation="order" variable="orderRespPP">
+			<bpel:correlations>
+				<bpel:correlation set="Session" initiate="no" />
+			</bpel:correlations>
+		</bpel:reply>
 
 		<bpel:receive name="CompleteOrderRequest" partnerLink="client"
 			operation="complete" portType="pp:DefaultBusinessTravel" variable="completeReqPP">
@@ -109,34 +135,34 @@
 			<bpel:condition><![CDATA[$completeReqPP.parameters/simulateException = 'true']]></bpel:condition>
 			<bpel:throw faultName="pp:simulatedFault" name="Throw exception" />
 		</bpel:if>
-		
-		<bpel:assign validate="no" name="set complete response">
-            <bpel:copy>
-                <bpel:from>
-                    <bpel:literal>
-                        <tns:completeResponseType>
-                            <id>id</id>
-                        </tns:completeResponseType>
-                    </bpel:literal>
-                </bpel:from>
-                <bpel:to variable="completeRespPP" part="parameters" />
-            </bpel:copy>
-            <bpel:copy>
-                <bpel:from part="parameters" variable="completeReqPP">
-                    <bpel:query>id</bpel:query>
-                </bpel:from>
-                <bpel:to part="parameters" variable="completeRespPP">
-                    <bpel:query>id</bpel:query>
-                </bpel:to>
-            </bpel:copy>
-        </bpel:assign>
 
-        <bpel:reply name="Reply about completion" partnerLink="client"
-            operation="complete" variable="completeRespPP">
-            <bpel:correlations>
-                <bpel:correlation set="Session" initiate="no" />
-            </bpel:correlations>
-        </bpel:reply>
-		
+		<bpel:assign validate="no" name="set complete response">
+			<bpel:copy>
+				<bpel:from>
+					<bpel:literal>
+						<tns:completeResponseType>
+							<id>id</id>
+						</tns:completeResponseType>
+					</bpel:literal>
+				</bpel:from>
+				<bpel:to variable="completeRespPP" part="parameters" />
+			</bpel:copy>
+			<bpel:copy>
+				<bpel:from part="parameters" variable="completeReqPP">
+					<bpel:query>id</bpel:query>
+				</bpel:from>
+				<bpel:to part="parameters" variable="completeRespPP">
+					<bpel:query>id</bpel:query>
+				</bpel:to>
+			</bpel:copy>
+		</bpel:assign>
+
+		<bpel:reply name="Reply about completion" partnerLink="client"
+			operation="complete" variable="completeRespPP">
+			<bpel:correlations>
+				<bpel:correlation set="Session" initiate="no" />
+			</bpel:correlations>
+		</bpel:reply>
+
 	</bpel:sequence>
 </bpel:process>

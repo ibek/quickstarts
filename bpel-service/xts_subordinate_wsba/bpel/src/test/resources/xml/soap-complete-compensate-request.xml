@@ -3,7 +3,7 @@
    <soapenv:Body>
       <pp:completeRequestType>
          <id>4</id>
-         <simulateException>false</simulateException>
+         <simulateException>true</simulateException>
       </pp:completeRequestType>
    </soapenv:Body>
 </soapenv:Envelope>

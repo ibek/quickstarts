@@ -31,242 +31,233 @@
 
 	<bpel:sequence name="Business Travel Process">
 
-		<bpel:pick createInstance="yes" name="Pick">
-			<bpel:onMessage partnerLink="client"
-				portType="tns:BusinessTravelService" operation="order" variable="orderReq">
-				<bpel:correlations>
-					<bpel:correlation set="Session" initiate="yes" />
-				</bpel:correlations>
+		<bpel:receive name="WS-AtomicTransaction order"
+			partnerLink="client" operation="order" portType="tns:BusinessTravelService"
+			variable="orderReq" createInstance="yes">
+			<bpel:correlations>
+				<bpel:correlation set="Session" initiate="yes" />
+			</bpel:correlations>
+		</bpel:receive>
 
-				<bpel:sequence name="WS-AtomicTransaction order">
-					<bpel:assign validate="no" name="prepare order response">
+		<bpel:assign validate="no" name="prepare order response">
+			<bpel:copy>
+				<bpel:from>
+					<bpel:literal>
+						<tns:orderResponseType>
+							<id>id</id>
+							<fltid>fltid</fltid>
+							<return_fltid>return_fltid</return_fltid>
+						</tns:orderResponseType>
+					</bpel:literal>
+				</bpel:from>
+				<bpel:to variable="orderResp" part="parameters" />
+			</bpel:copy>
+			<bpel:copy>
+				<bpel:from part="parameters" variable="orderReq">
+					<bpel:query>id</bpel:query>
+				</bpel:from>
+				<bpel:to part="parameters" variable="orderResp">
+					<bpel:query>id</bpel:query>
+				</bpel:to>
+			</bpel:copy>
+		</bpel:assign>
+
+		<bpel:assign validate="no" name="set request for getFLTID operation">
+			<bpel:copy>
+				<bpel:from>
+					<bpel:literal>
+						<airport:getFLTID>
+							<from>from</from>
+							<to>to</to>
+							<date>date</date>
+						</airport:getFLTID>
+					</bpel:literal>
+				</bpel:from>
+				<bpel:to variable="airportGetFLTIDReq" part="parameters" />
+			</bpel:copy>
+			<bpel:copy>
+				<bpel:from part="parameters" variable="orderReq">
+					<bpel:query>from</bpel:query>
+				</bpel:from>
+				<bpel:to part="parameters" variable="airportGetFLTIDReq">
+					<bpel:query>from</bpel:query>
+				</bpel:to>
+			</bpel:copy>
+			<bpel:copy>
+				<bpel:from part="parameters" variable="orderReq">
+					<bpel:query>to</bpel:query>
+				</bpel:from>
+				<bpel:to part="parameters" variable="airportGetFLTIDReq">
+					<bpel:query>to</bpel:query>
+				</bpel:to>
+			</bpel:copy>
+			<bpel:copy>
+				<bpel:from part="parameters" variable="orderReq">
+					<bpel:query>arrival</bpel:query>
+				</bpel:from>
+				<bpel:to part="parameters" variable="airportGetFLTIDReq">
+					<bpel:query>date</bpel:query>
+				</bpel:to>
+			</bpel:copy>
+		</bpel:assign>
+
+		<bpel:invoke name="Get FLTID for order first fly ticket"
+			partnerLink="airport" operation="getFLTID" inputVariable="airportGetFLTIDReq"
+			outputVariable="airportFLTIDResp" />
+
+		<bpel:assign validate="no" name="set fltid to order response">
+			<bpel:copy>
+				<bpel:from part="parameters" variable="airportFLTIDResp">
+					<bpel:query>fltid</bpel:query>
+				</bpel:from>
+				<bpel:to part="parameters" variable="orderResp">
+					<bpel:query>fltid</bpel:query>
+				</bpel:to>
+			</bpel:copy>
+		</bpel:assign>
+
+		<bpel:assign validate="no" name="set request for getFLTID operation">
+			<bpel:copy>
+				<bpel:from>
+					<bpel:literal>
+						<airport:getFLTID>
+							<from>from</from>
+							<to>to</to>
+							<date>date</date>
+						</airport:getFLTID>
+					</bpel:literal>
+				</bpel:from>
+				<bpel:to variable="airportGetFLTIDReq" part="parameters" />
+			</bpel:copy>
+			<bpel:copy>
+				<bpel:from part="parameters" variable="orderReq">
+					<bpel:query>to</bpel:query>
+				</bpel:from>
+				<bpel:to part="parameters" variable="airportGetFLTIDReq">
+					<bpel:query>from</bpel:query>
+				</bpel:to>
+			</bpel:copy>
+			<bpel:copy>
+				<bpel:from part="parameters" variable="orderReq">
+					<bpel:query>from</bpel:query>
+				</bpel:from>
+				<bpel:to part="parameters" variable="airportGetFLTIDReq">
+					<bpel:query>to</bpel:query>
+				</bpel:to>
+			</bpel:copy>
+			<bpel:copy>
+				<bpel:from part="parameters" variable="orderReq">
+					<bpel:query>departure</bpel:query>
+				</bpel:from>
+				<bpel:to part="parameters" variable="airportGetFLTIDReq">
+					<bpel:query>date</bpel:query>
+				</bpel:to>
+			</bpel:copy>
+		</bpel:assign>
+
+		<bpel:invoke name="Get FLTID for order second fly ticket"
+			partnerLink="airport" operation="getFLTID" inputVariable="airportGetFLTIDReq"
+			outputVariable="airportFLTIDResp" />
+
+		<bpel:assign validate="no" name="set return fltid to order response">
+			<bpel:copy>
+				<bpel:from part="parameters" variable="airportFLTIDResp">
+					<bpel:query>fltid</bpel:query>
+				</bpel:from>
+				<bpel:to part="parameters" variable="orderResp">
+					<bpel:query>return_fltid</bpel:query>
+				</bpel:to>
+			</bpel:copy>
+		</bpel:assign>
+
+		<!-- For every person order fly tickets -->
+		<bpel:forEach counterName="person" parallel="no"
+			name="For each person">
+			<bpel:startCounterValue>1</bpel:startCounterValue>
+			<bpel:finalCounterValue>$orderReq.parameters/persons
+			</bpel:finalCounterValue>
+			<bpel:scope>
+				<bpel:sequence name="main">
+
+					<bpel:assign validate="no"
+						name="set request for order fly tickets">
 						<bpel:copy>
 							<bpel:from>
 								<bpel:literal>
-									<tns:orderResponseType>
-										<id>respid</id>
+									<airport:order>
+										<name>name</name>
 										<fltid>fltid</fltid>
-										<return_fltid>return_fltid</return_fltid>
-									</tns:orderResponseType>
+									</airport:order>
 								</bpel:literal>
 							</bpel:from>
-							<bpel:to variable="orderResp" part="parameters" />
+							<bpel:to variable="airportOrderReq" part="parameters" />
 						</bpel:copy>
 						<bpel:copy>
 							<bpel:from part="parameters" variable="orderReq">
-								<bpel:query>id</bpel:query>
+								<bpel:query>name</bpel:query>
 							</bpel:from>
-							<bpel:to part="parameters" variable="orderResp">
-								<bpel:query>id</bpel:query>
+							<bpel:to part="parameters" variable="airportOrderReq">
+								<bpel:query>name</bpel:query>
+							</bpel:to>
+						</bpel:copy>
+						<bpel:copy>
+							<bpel:from part="parameters" variable="orderResp">
+								<bpel:query>fltid</bpel:query>
+							</bpel:from>
+							<bpel:to part="parameters" variable="airportOrderReq">
+								<bpel:query>fltid</bpel:query>
 							</bpel:to>
 						</bpel:copy>
 					</bpel:assign>
 
+					<bpel:invoke name="Order first fly ticket" partnerLink="airport"
+						operation="order" inputVariable="airportOrderReq" outputVariable="airportOrderResp" />
+
 					<bpel:assign validate="no"
-						name="set request for getFLTID operation">
+						name="set return request for order fly tickets">
 						<bpel:copy>
 							<bpel:from>
 								<bpel:literal>
-									<airport:getFLTID>
-										<from>from</from>
-										<to>to</to>
-										<date>date</date>
-									</airport:getFLTID>
+									<airport:order>
+										<name>name</name>
+										<fltid>fltid</fltid>
+									</airport:order>
 								</bpel:literal>
 							</bpel:from>
-							<bpel:to variable="airportGetFLTIDReq" part="parameters" />
+							<bpel:to variable="airportOrderReq" part="parameters" />
 						</bpel:copy>
 						<bpel:copy>
 							<bpel:from part="parameters" variable="orderReq">
-								<bpel:query>from</bpel:query>
+								<bpel:query>name</bpel:query>
 							</bpel:from>
-							<bpel:to part="parameters" variable="airportGetFLTIDReq">
-								<bpel:query>from</bpel:query>
+							<bpel:to part="parameters" variable="airportOrderReq">
+								<bpel:query>name</bpel:query>
 							</bpel:to>
 						</bpel:copy>
 						<bpel:copy>
-							<bpel:from part="parameters" variable="orderReq">
-								<bpel:query>to</bpel:query>
-							</bpel:from>
-							<bpel:to part="parameters" variable="airportGetFLTIDReq">
-								<bpel:query>to</bpel:query>
-							</bpel:to>
-						</bpel:copy>
-						<bpel:copy>
-							<bpel:from part="parameters" variable="orderReq">
-								<bpel:query>arrival</bpel:query>
-							</bpel:from>
-							<bpel:to part="parameters" variable="airportGetFLTIDReq">
-								<bpel:query>date</bpel:query>
-							</bpel:to>
-						</bpel:copy>
-					</bpel:assign>
-
-					<bpel:invoke name="Get FLTID for order first fly ticket"
-						partnerLink="airport" operation="getFLTID" inputVariable="airportGetFLTIDReq"
-						outputVariable="airportFLTIDResp" />
-
-					<bpel:assign validate="no" name="set fltid to order response">
-						<bpel:copy>
-							<bpel:from part="parameters" variable="airportFLTIDResp">
-								<bpel:query>fltid</bpel:query>
-							</bpel:from>
-							<bpel:to part="parameters" variable="orderResp">
-								<bpel:query>fltid</bpel:query>
-							</bpel:to>
-						</bpel:copy>
-					</bpel:assign>
-
-					<bpel:assign validate="no"
-						name="set request for getFLTID operation">
-						<bpel:copy>
-							<bpel:from>
-								<bpel:literal>
-									<airport:getFLTID>
-										<from>from</from>
-										<to>to</to>
-										<date>date</date>
-									</airport:getFLTID>
-								</bpel:literal>
-							</bpel:from>
-							<bpel:to variable="airportGetFLTIDReq" part="parameters" />
-						</bpel:copy>
-						<bpel:copy>
-							<bpel:from part="parameters" variable="orderReq">
-								<bpel:query>to</bpel:query>
-							</bpel:from>
-							<bpel:to part="parameters" variable="airportGetFLTIDReq">
-								<bpel:query>from</bpel:query>
-							</bpel:to>
-						</bpel:copy>
-						<bpel:copy>
-							<bpel:from part="parameters" variable="orderReq">
-								<bpel:query>from</bpel:query>
-							</bpel:from>
-							<bpel:to part="parameters" variable="airportGetFLTIDReq">
-								<bpel:query>to</bpel:query>
-							</bpel:to>
-						</bpel:copy>
-						<bpel:copy>
-							<bpel:from part="parameters" variable="orderReq">
-								<bpel:query>departure</bpel:query>
-							</bpel:from>
-							<bpel:to part="parameters" variable="airportGetFLTIDReq">
-								<bpel:query>date</bpel:query>
-							</bpel:to>
-						</bpel:copy>
-					</bpel:assign>
-
-					<bpel:invoke name="Get FLTID for order second fly ticket"
-						partnerLink="airport" operation="getFLTID" inputVariable="airportGetFLTIDReq"
-						outputVariable="airportFLTIDResp" />
-
-					<bpel:assign validate="no"
-						name="set return fltid to order response">
-						<bpel:copy>
-							<bpel:from part="parameters" variable="airportFLTIDResp">
-								<bpel:query>fltid</bpel:query>
-							</bpel:from>
-							<bpel:to part="parameters" variable="orderResp">
+							<bpel:from part="parameters" variable="orderResp">
 								<bpel:query>return_fltid</bpel:query>
+							</bpel:from>
+							<bpel:to part="parameters" variable="airportOrderReq">
+								<bpel:query>fltid</bpel:query>
 							</bpel:to>
 						</bpel:copy>
 					</bpel:assign>
 
-					<!-- For every person order fly tickets -->
-					<bpel:forEach counterName="person" parallel="no"
-						name="For each person">
-						<bpel:startCounterValue>1</bpel:startCounterValue>
-						<bpel:finalCounterValue>$orderReq.parameters/persons
-						</bpel:finalCounterValue>
-						<bpel:scope>
-							<bpel:sequence name="main">
-
-								<bpel:assign validate="no"
-									name="set request for order fly tickets">
-									<bpel:copy>
-										<bpel:from>
-											<bpel:literal>
-												<airport:order>
-													<name>name</name>
-													<fltid>fltid</fltid>
-												</airport:order>
-											</bpel:literal>
-										</bpel:from>
-										<bpel:to variable="airportOrderReq" part="parameters" />
-									</bpel:copy>
-									<bpel:copy>
-										<bpel:from part="parameters" variable="orderReq">
-											<bpel:query>name</bpel:query>
-										</bpel:from>
-										<bpel:to part="parameters" variable="airportOrderReq">
-											<bpel:query>name</bpel:query>
-										</bpel:to>
-									</bpel:copy>
-									<bpel:copy>
-										<bpel:from part="parameters" variable="orderResp">
-											<bpel:query>fltid</bpel:query>
-										</bpel:from>
-										<bpel:to part="parameters" variable="airportOrderReq">
-											<bpel:query>fltid</bpel:query>
-										</bpel:to>
-									</bpel:copy>
-								</bpel:assign>
-
-								<bpel:invoke name="Order first fly ticket"
-									partnerLink="airport" operation="order" inputVariable="airportOrderReq"
-									outputVariable="airportOrderResp" />
-
-								<bpel:assign validate="no"
-									name="set return request for order fly tickets">
-									<bpel:copy>
-										<bpel:from>
-											<bpel:literal>
-												<airport:order>
-													<name>name</name>
-													<fltid>fltid</fltid>
-												</airport:order>
-											</bpel:literal>
-										</bpel:from>
-										<bpel:to variable="airportOrderReq" part="parameters" />
-									</bpel:copy>
-									<bpel:copy>
-										<bpel:from part="parameters" variable="orderReq">
-											<bpel:query>name</bpel:query>
-										</bpel:from>
-										<bpel:to part="parameters" variable="airportOrderReq">
-											<bpel:query>name</bpel:query>
-										</bpel:to>
-									</bpel:copy>
-									<bpel:copy>
-										<bpel:from part="parameters" variable="orderResp">
-											<bpel:query>return_fltid</bpel:query>
-										</bpel:from>
-										<bpel:to part="parameters" variable="airportOrderReq">
-											<bpel:query>fltid</bpel:query>
-										</bpel:to>
-									</bpel:copy>
-								</bpel:assign>
-
-								<bpel:invoke name="Order second fly ticket"
-									partnerLink="airport" operation="order" inputVariable="airportOrderReq"
-									outputVariable="airportOrderResp" />
-
-							</bpel:sequence>
-						</bpel:scope>
-					</bpel:forEach>
-
-					<bpel:reply name="Reply order details" partnerLink="client"
-						operation="order" variable="orderResp">
-						<bpel:correlations>
-							<bpel:correlation set="Session" initiate="no" />
-						</bpel:correlations>
-					</bpel:reply>
+					<bpel:invoke name="Order second fly ticket"
+						partnerLink="airport" operation="order" inputVariable="airportOrderReq"
+						outputVariable="airportOrderResp" />
 
 				</bpel:sequence>
+			</bpel:scope>
+		</bpel:forEach>
 
-			</bpel:onMessage>
-		</bpel:pick>
+		<bpel:reply name="Reply order details" partnerLink="client"
+			operation="order" variable="orderResp">
+			<bpel:correlations>
+				<bpel:correlation set="Session" initiate="no" />
+			</bpel:correlations>
+		</bpel:reply>
 
 		<bpel:receive name="Complete order request" partnerLink="client"
 			operation="complete" portType="tns:BusinessTravelService" variable="completeReq">
@@ -284,9 +275,9 @@
 			<bpel:copy>
 				<bpel:from>
 					<bpel:literal>
-						<tns:completeResponseType>
+						<tns:complete>
 							<id>id</id>
-						</tns:completeResponseType>
+						</tns:complete>
 					</bpel:literal>
 				</bpel:from>
 				<bpel:to variable="completeResp" part="parameters" />

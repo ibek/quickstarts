@@ -38,9 +38,17 @@
       <sca:service name="DefaultBusinessTravel">
         <sca:interface.wsdl interface="DefaultBusinessTravelArtifacts.wsdl#wsdl.porttype(DefaultBusinessTravel)"/>
       </sca:service>
-      <sca:reference name="BusinessTravelService">
+      <sca:reference name="BusinessTravelServiceRef">
         <sca:interface.wsdl interface="BusinessTravelArtifacts.wsdl#wsdl.porttype(BusinessTravelService)"/>
       </sca:reference>
     </sca:component>
+    <sca:reference name="BusinessTravelServiceRef" multiplicity="0..1" promote="DefaultBusinessTravel/BusinessTravelServiceRef">
+      <sca:interface.wsdl interface="BusinessTravelArtifacts.wsdl#wsdl.porttype(BusinessTravelService)"/>
+      <soap:binding.soap>
+        <soap:contextMapper includes=".*" soapHeadersType="DOM"/>
+        <soap:wsdl>BusinessTravelArtifacts.wsdl</soap:wsdl>
+        <soap:socketAddr>:18001</soap:socketAddr>
+      </soap:binding.soap>
+    </sca:reference>
   </sca:composite>
 </switchyard>
